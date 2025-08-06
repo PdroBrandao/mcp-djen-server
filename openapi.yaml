@@ -1,118 +1,194 @@
 openapi: 3.1.0
 info:
   title: MCP DJEN Server
-  description: Brazilian Court Notifications API for LLMs
+  description: |
+    Production-ready MCP (Model Context Protocol) server for Brazilian Electronic Justice Diary (DJEN) data.
+    
+    This server standardizes access to Brazilian court notifications, making them easily consumable by LLM agents and AI applications.
+    
+    ## Features
+    - Real-time court notification retrieval
+    - Structured JSON responses for LLM consumption
+    - Rate limiting and error handling
+    - Production-ready reliability
+    
+    ## Authentication
+    Currently open for development. Production deployments should implement API key authentication.
+    
+    ## Rate Limiting
+    - 100 requests per minute per IP
+    - 1000 requests per hour per IP
+    
+    ## Error Handling
+    All errors return structured JSON responses with appropriate HTTP status codes.
   version: 1.0.0
   contact:
     name: Pedro Brandão
-    email: contact@pdrobrandao.com
+    email: pedro@pdrobrandao.com
     url: https://www.pdrobrandao.com
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+  x-logo:
+    url: https://www.pdrobrandao.com/assets/logo.png
+    altText: MCP DJEN Server Logo
 
 servers:
-  - url: https://mcp-djen.up.railway.app
+  - url: https://mcp-djen-server-production.up.railway.app
     description: Production server
   - url: http://localhost:8000
     description: Local development server
 
 paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: |
+        Returns the health status of the MCP DJEN Server.
+        
+        This endpoint is used by monitoring systems and load balancers to verify service availability.
+      operationId: getHealth
+      tags:
+        - System
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  summary: Healthy server response
+                  value:
+                    status: "healthy"
+                    timestamp: "2025-08-06T17:48:25.231962"
+                    service: "mcp-djen-server"
+                    version: "1.0.0"
+                    uptime: "2h 15m 30s"
+        '503':
+          description: Server is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unhealthy:
+                  summary: Unhealthy server response
+                  value:
+                    error: "SERVICE_UNAVAILABLE"
+                    message: "Server is not responding properly"
+                    code: 503
+                    timestamp: "2025-08-06T17:48:25.231962"
+
   /:
     get:
       summary: Root endpoint
-      description: Get server information and available endpoints
+      description: |
+        Returns basic information about the MCP DJEN Server.
+        
+        This endpoint provides an overview of available endpoints and server information.
+      operationId: getRoot
+      tags:
+        - System
       responses:
         '200':
           description: Server information
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "success"
-                  message:
-                    type: string
-                    example: "MCP DJEN Server - Brazilian Court Notifications for LLMs"
-                  version:
-                    type: string
-                    example: "1.0.0"
-                  endpoints:
-                    type: object
-                    properties:
-                      intimations:
-                        type: string
-                        example: "/intimations"
-                      health:
-                        type: string
-                        example: "/health"
-                      docs:
-                        type: string
-                        example: "/docs"
-
-  /health:
-    get:
-      summary: Health check
-      description: Check server health status
-      responses:
-        '200':
-          description: Server health information
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "healthy"
-                  timestamp:
-                    type: string
-                    format: date-time
-                    example: "2025-08-06T14:30:00Z"
-                  service:
-                    type: string
-                    example: "mcp-djen-server"
+                $ref: '#/components/schemas/RootResponse'
+              examples:
+                root:
+                  summary: Root endpoint response
+                  value:
+                    status: "success"
+                    message: "MCP DJEN Server - Brazilian Court Notifications for LLMs"
+                    version: "1.0.0"
+                    endpoints:
+                      intimations: "/intimations"
+                      health: "/health"
+                      docs: "/docs"
+                    documentation: "https://github.com/PdroBrandao/mcp-djen-server"
 
   /intimations:
     get:
       summary: Get court notifications
-      description: Retrieve court notifications for a lawyer with structured data
+      description: |
+        Retrieve court notifications for a specific lawyer within a date range.
+        
+        This is the main endpoint for LLM integration. It returns structured court notifications
+        that can be easily processed by AI applications.
+        
+        ## Usage Examples
+        
+        ### Basic Query
+        ```bash
+        curl "https://mcp-djen-server.railway.app/intimations?name=PEDRO%20BRAND%C3%83O&date_start=2025-08-01&date_end=2025-08-06"
+        ```
+        
+        ### With OAB Number
+        ```bash
+        curl "https://mcp-djen-server.railway.app/intimations?name=PEDRO%20BRAND%C3%83O&oab=123456%2FMG&date_start=2025-08-01&date_end=2025-08-06"
+        ```
+        
+        ## LLM Integration
+        
+        This endpoint is designed for LLM function calling:
+        
+        ```python
+        functions = [{
+            "name": "get_court_notifications",
+            "description": "Get court notifications for a lawyer",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Lawyer's full name"},
+                    "date_start": {"type": "string", "description": "Start date (YYYY-MM-DD)"},
+                    "date_end": {"type": "string", "description": "End date (YYYY-MM-DD)"},
+                    "oab": {"type": "string", "description": "OAB registration number (optional)"}
+                },
+                "required": ["name", "date_start", "date_end"]
+            }
+        }]
+        ```
+      operationId: getIntimations
+      tags:
+        - Notifications
       parameters:
         - name: name
           in: query
           required: true
-          description: Lawyer's full name
+          description: Lawyer's full name (URL encoded)
           schema:
             type: string
-          example: "ALFREDO RAMOS"
-        - name: oab
-          in: query
-          required: false
-          description: OAB registration number
-          schema:
-            type: string
-          example: "123456/MG"
+            example: "PEDRO BRANDÃO"
         - name: date_start
           in: query
           required: true
-          description: Start date (YYYY-MM-DD)
+          description: Start date in YYYY-MM-DD format
           schema:
             type: string
             format: date
-          example: "2025-08-06"
+            example: "2025-08-01"
         - name: date_end
           in: query
           required: true
-          description: End date (YYYY-MM-DD)
+          description: End date in YYYY-MM-DD format
           schema:
             type: string
             format: date
-          example: "2025-08-06"
+            example: "2025-08-06"
+        - name: oab
+          in: query
+          required: false
+          description: OAB registration number (optional)
+          schema:
+            type: string
+            example: "123456/MG"
       responses:
         '200':
-          description: List of court notifications
+          description: Successfully retrieved notifications
           content:
             application/json:
               schema:
@@ -121,11 +197,11 @@ paths:
                   $ref: '#/components/schemas/IntimationResponse'
               examples:
                 success:
-                  summary: Successful response
+                  summary: Successful response with notifications
                   value:
                     - date: "2025-08-06"
                       court: "TJMG"
-                      lawyer_name: "ALFREDO RAMOS"
+                      lawyer_name: "PEDRO BRANDÃO"
                       oab: "123456/MG"
                       case_number: "1234567-89.2024.8.13.0001"
                       type: "TOMAR_CIÊNCIA"
@@ -133,8 +209,11 @@ paths:
                       url: "https://www.tjmg.jus.br/djen/123"
                       deadline: "15 days"
                       actions: ["MANIFESTAR_SE", "CALCULAR_PRAZO"]
+                empty:
+                  summary: No notifications found
+                  value: []
         '400':
-          description: Bad request
+          description: Bad request - invalid parameters
           content:
             application/json:
               schema:
@@ -144,40 +223,116 @@ paths:
                   summary: Invalid date format
                   value:
                     error: "INVALID_DATE_FORMAT"
-                    message: "Invalid date format. Use YYYY-MM-DD"
+                    message: "Date must be in YYYY-MM-DD format"
                     code: 400
+                    details:
+                      field: "date_start"
+                      value: "2025/08/01"
+                      expected_format: "YYYY-MM-DD"
+                missing_name:
+                  summary: Missing required parameter
+                  value:
+                    error: "MISSING_REQUIRED_PARAMETER"
+                    message: "Parameter 'name' is required"
+                    code: 400
+                    details:
+                      missing_parameter: "name"
+                      required_parameters: ["name", "date_start", "date_end"]
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                validation_error:
+                  summary: Validation error response
+                  value:
+                    error: "VALIDATION_ERROR"
+                    message: "Request validation failed"
+                    code: 422
+                    details:
+                      - field: "date_start"
+                        error: "Date cannot be in the future"
+                        value: "2026-01-01"
+                      - field: "date_end"
+                        error: "End date must be after start date"
+                        value: "2025-08-01"
         '429':
           description: Rate limit exceeded
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rate_limit:
+                  summary: Rate limit exceeded
+                  value:
+                    error: "RATE_LIMIT_EXCEEDED"
+                    message: "Too many requests. Please try again later."
+                    code: 429
+                    retry_after: 60
         '500':
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                server_error:
+                  summary: Internal server error
+                  value:
+                    error: "INTERNAL_SERVER_ERROR"
+                    message: "An unexpected error occurred"
+                    code: 500
+                    request_id: "req_123456789"
 
   /intimations/{case_number}:
     get:
       summary: Get case details
-      description: Get detailed information about a specific case
+      description: |
+        Retrieve detailed information about a specific court case.
+        
+        This endpoint provides comprehensive information about a single case,
+        including all notifications, deadlines, and actions required.
+      operationId: getCaseDetails
+      tags:
+        - Notifications
       parameters:
         - name: case_number
           in: path
           required: true
-          description: Process number to search for
+          description: Court case number
           schema:
             type: string
-          example: "1234567-89.2024.8.13.0001"
+            pattern: '^[0-9]{7}-[0-9]{2}\.[0-9]{4}\.[0-9]\.[0-9]{2}\.[0-9]{4}$'
+            example: "1234567-89.2024.8.13.0001"
       responses:
         '200':
-          description: Case details
+          description: Successfully retrieved case details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IntimationResponse'
+                $ref: '#/components/schemas/CaseDetailsResponse'
+              examples:
+                case_details:
+                  summary: Case details response
+                  value:
+                    case_number: "1234567-89.2024.8.13.0001"
+                    court: "TJMG"
+                    parties:
+                      - name: "FULANO DE TAL"
+                        type: "AUTOR"
+                    lawyer: "PEDRO BRANDÃO"
+                    oab: "123456/MG"
+                    notifications:
+                      - date: "2025-08-06"
+                        type: "TOMAR_CIÊNCIA"
+                        summary: "Intimação para ciência de despacho proferido em 05/08/2025"
+                        deadline: "15 days"
+                        actions: ["MANIFESTAR_SE", "CALCULAR_PRAZO"]
+                    status: "EM_ANDAMENTO"
+                    last_update: "2025-08-06T10:30:00Z"
         '404':
           description: Case not found
           content:
@@ -185,55 +340,131 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                not_found:
+                case_not_found:
                   summary: Case not found
                   value:
-                    error: "NOT_FOUND"
-                    message: "Case 1234567-89.2024.8.13.0001 not found"
+                    error: "CASE_NOT_FOUND"
+                    message: "Case number not found in our records"
                     code: 404
+                    details:
+                      case_number: "1234567-89.2024.8.13.0001"
+                      searched_courts: ["TJMG", "TJSP"]
 
   /courts:
     get:
       summary: Get available courts
-      description: Get list of available court codes and names
+      description: |
+        Retrieve a list of all available courts supported by the MCP DJEN Server.
+        
+        This endpoint is useful for:
+        - Populating court selection dropdowns
+        - Validating court codes
+        - Understanding service coverage
+      operationId: getCourts
+      tags:
+        - System
       responses:
         '200':
-          description: List of available courts
+          description: Successfully retrieved courts list
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    code:
-                      type: string
-                      example: "TJMG"
-                    name:
-                      type: string
-                      example: "Tribunal de Justiça de Minas Gerais"
+                  $ref: '#/components/schemas/CourtResponse'
               examples:
                 courts:
                   summary: Available courts
                   value:
                     - code: "TJMG"
                       name: "Tribunal de Justiça de Minas Gerais"
+                      region: "Minas Gerais"
+                      status: "ACTIVE"
                     - code: "TJSP"
                       name: "Tribunal de Justiça de São Paulo"
+                      region: "São Paulo"
+                      status: "ACTIVE"
                     - code: "TJRJ"
                       name: "Tribunal de Justiça do Rio de Janeiro"
+                      region: "Rio de Janeiro"
+                      status: "ACTIVE"
                     - code: "TRT3"
                       name: "Tribunal Regional do Trabalho 3ª Região"
+                      region: "Minas Gerais"
+                      status: "ACTIVE"
 
 components:
   schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - service
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          description: Health status of the server
+        timestamp:
+          type: string
+          format: date-time
+          description: Current server timestamp
+        service:
+          type: string
+          description: Service name
+        version:
+          type: string
+          description: Service version
+        uptime:
+          type: string
+          description: Server uptime
+
+    RootResponse:
+      type: object
+      required:
+        - status
+        - message
+        - version
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+        message:
+          type: string
+          description: Server description
+        version:
+          type: string
+          description: API version
+        endpoints:
+          type: object
+          description: Available endpoints
+          properties:
+            intimations:
+              type: string
+            health:
+              type: string
+            docs:
+              type: string
+        documentation:
+          type: string
+          format: uri
+
     IntimationResponse:
       type: object
+      required:
+        - date
+        - court
+        - lawyer_name
+        - case_number
+        - type
+        - summary
+        - url
       properties:
         date:
           type: string
           format: date
-          description: Date of the notification
+          description: Notification date
           example: "2025-08-06"
         court:
           type: string
@@ -242,32 +473,33 @@ components:
         lawyer_name:
           type: string
           description: Lawyer's full name
-          example: "ALFREDO RAMOS"
+          example: "PEDRO BRANDÃO"
         oab:
           type: string
           description: OAB registration number
           example: "123456/MG"
         case_number:
           type: string
-          description: Process number
+          description: Court case number
+          pattern: '^[0-9]{7}-[0-9]{2}\.[0-9]{4}\.[0-9]\.[0-9]{2}\.[0-9]{4}$'
           example: "1234567-89.2024.8.13.0001"
         type:
           type: string
           description: Type of notification
+          enum: [TOMAR_CIÊNCIA, MANIFESTAR_SE, CITAR, INTIMAR, OUTROS]
           example: "TOMAR_CIÊNCIA"
         summary:
           type: string
-          description: Summary of the notification
+          description: Human-readable summary of the notification
           example: "Intimação para ciência de despacho proferido em 05/08/2025"
         url:
           type: string
           format: uri
-          description: URL to the original notification
+          description: Direct link to the notification
           example: "https://www.tjmg.jus.br/djen/123"
         deadline:
           type: string
-          nullable: true
-          description: Deadline for action
+          description: Deadline for action (if applicable)
           example: "15 days"
         actions:
           type: array
@@ -275,19 +507,78 @@ components:
             type: string
           description: Recommended actions
           example: ["MANIFESTAR_SE", "CALCULAR_PRAZO"]
+
+    CaseDetailsResponse:
+      type: object
       required:
-        - date
-        - court
-        - lawyer_name
-        - oab
         - case_number
-        - type
-        - summary
-        - url
-        - actions
+        - court
+        - lawyer
+        - notifications
+        - status
+      properties:
+        case_number:
+          type: string
+          description: Court case number
+        court:
+          type: string
+          description: Court code
+        parties:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+                enum: [AUTOR, RÉU, TERCEIRO]
+        lawyer:
+          type: string
+          description: Lawyer's name
+        oab:
+          type: string
+          description: OAB registration number
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntimationResponse'
+        status:
+          type: string
+          enum: [EM_ANDAMENTO, FINALIZADO, SUSPENSO]
+        last_update:
+          type: string
+          format: date-time
+
+    CourtResponse:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          description: Court code
+          example: "TJMG"
+        name:
+          type: string
+          description: Court full name
+          example: "Tribunal de Justiça de Minas Gerais"
+        region:
+          type: string
+          description: State or region
+          example: "Minas Gerais"
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, MAINTENANCE]
+          default: "ACTIVE"
 
     ErrorResponse:
       type: object
+      required:
+        - error
+        - message
+        - code
       properties:
         error:
           type: string
@@ -295,27 +586,59 @@ components:
           example: "INVALID_DATE_FORMAT"
         message:
           type: string
-          description: Error message
-          example: "Invalid date format. Use YYYY-MM-DD"
+          description: Human-readable error message
+          example: "Date must be in YYYY-MM-DD format"
         code:
           type: integer
           description: HTTP status code
           example: 400
-      required:
-        - error
-        - message
-        - code
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+        details:
+          type: object
+          description: Additional error details
+        request_id:
+          type: string
+          description: Request ID for tracking
+        retry_after:
+          type: integer
+          description: Seconds to wait before retrying (for rate limits)
+
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  error:
+                    type: string
+                  value:
+                    type: string
 
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
+      description: API key for authentication (required for production)
+
+security:
+  - ApiKeyAuth: []
 
 tags:
+  - name: System
+    description: System endpoints for health checks and information
   - name: Notifications
-    description: Court notification operations
-  - name: Cases
-    description: Case-specific operations
-  - name: Courts
-    description: Court information operations 
+    description: Court notification endpoints for LLM integration
+
+externalDocs:
+  description: Find more info about MCP DJEN Server
+  url: https://github.com/PdroBrandao/mcp-djen-server 

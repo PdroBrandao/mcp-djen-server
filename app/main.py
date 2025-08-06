@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
@@ -109,7 +109,7 @@ async def get_intimations(
     oab: Optional[str] = Query(None, description="OAB registration number"),
     date_start: str = Query(..., description="Start date (YYYY-MM-DD)"),
     date_end: str = Query(..., description="End date (YYYY-MM-DD)"),
-    request=None
+    request: Request = None
 ):
     """
     Get court notifications for a lawyer
@@ -175,7 +175,7 @@ async def get_intimations(
 
 @app.get("/intimations/{case_number}")
 @limiter.limit("100/minute")
-async def get_case_details(case_number: str, request=None):
+async def get_case_details(case_number: str, request: Request = None):
     """
     Get detailed information about a specific case
     
@@ -210,7 +210,7 @@ async def get_case_details(case_number: str, request=None):
 
 @app.get("/courts")
 @limiter.limit("50/minute")
-async def get_available_courts(request=None):
+async def get_available_courts(request: Request = None):
     """
     Get list of available courts
     
