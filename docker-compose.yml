@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mcp-djen-server:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=false
+      - DJEN_API_BASE_URL=https://comunicaapi.pje.jus.br/api/v1/comunicacao
+      - DJEN_API_TIMEOUT=30
+      - RATE_LIMIT_PER_MINUTE=100
+      - RATE_LIMIT_PER_HOUR=1000
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+      - CORS_ORIGINS=*
+      - ALLOWED_HOSTS=*
+      - ENABLE_METRICS=true
+      - METRICS_PORT=9090
+    volumes:
+      - ./app:/app/app
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add Redis for caching in production
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+
+volumes:
+  redis_data: 

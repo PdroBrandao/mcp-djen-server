@@ -1,0 +1,38 @@
+[
+  {
+    "date": "2025-08-06",
+    "court": "TJMG",
+    "lawyer_name": "PEDRO BRANDÃO",
+    "oab": "123456/MG",
+    "case_number": "1234567-89.2024.8.13.0001",
+    "type": "TOMAR_CIÊNCIA",
+    "summary": "Intimação para ciência de despacho proferido em 05/08/2025",
+    "url": "https://www.tjmg.jus.br/djen/123",
+    "deadline": "15 days",
+    "actions": ["MANIFESTAR_SE", "CALCULAR_PRAZO"]
+  },
+  {
+    "date": "2025-08-06",
+    "court": "TJMG",
+    "lawyer_name": "PEDRO BRANDÃO",
+    "oab": "123456/MG",
+    "case_number": "1234567-89.2024.8.13.0002",
+    "type": "MANIFESTAR_SE",
+    "summary": "Intimação para manifestar sobre impugnação de cálculos",
+    "url": "https://www.tjmg.jus.br/djen/124",
+    "deadline": "5 days",
+    "actions": ["MANIFESTAR_SE", "PREPARAR_IMPUGNACAO"]
+  },
+  {
+    "date": "2025-08-06",
+    "court": "TJMG",
+    "lawyer_name": "PEDRO BRANDÃO",
+    "oab": "123456/MG",
+    "case_number": "1234567-89.2024.8.13.0003",
+    "type": "CITAR",
+    "summary": "Citação para audiência de conciliação",
+    "url": "https://www.tjmg.jus.br/djen/125",
+    "deadline": "10 days",
+    "actions": ["PREPARAR_DOCUMENTOS", "AGENDAR_AUDIENCIA"]
+  }
+] 

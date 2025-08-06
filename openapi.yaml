@@ -1,0 +1,321 @@
+openapi: 3.1.0
+info:
+  title: MCP DJEN Server
+  description: Brazilian Court Notifications API for LLMs
+  version: 1.0.0
+  contact:
+    name: Pedro Brandão
+    email: contact@pdrobrandao.com
+    url: https://www.pdrobrandao.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://mcp-djen.up.railway.app
+    description: Production server
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /:
+    get:
+      summary: Root endpoint
+      description: Get server information and available endpoints
+      responses:
+        '200':
+          description: Server information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "MCP DJEN Server - Brazilian Court Notifications for LLMs"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  endpoints:
+                    type: object
+                    properties:
+                      intimations:
+                        type: string
+                        example: "/intimations"
+                      health:
+                        type: string
+                        example: "/health"
+                      docs:
+                        type: string
+                        example: "/docs"
+
+  /health:
+    get:
+      summary: Health check
+      description: Check server health status
+      responses:
+        '200':
+          description: Server health information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-08-06T14:30:00Z"
+                  service:
+                    type: string
+                    example: "mcp-djen-server"
+
+  /intimations:
+    get:
+      summary: Get court notifications
+      description: Retrieve court notifications for a lawyer with structured data
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: Lawyer's full name
+          schema:
+            type: string
+          example: "ALFREDO RAMOS"
+        - name: oab
+          in: query
+          required: false
+          description: OAB registration number
+          schema:
+            type: string
+          example: "123456/MG"
+        - name: date_start
+          in: query
+          required: true
+          description: Start date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+          example: "2025-08-06"
+        - name: date_end
+          in: query
+          required: true
+          description: End date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+          example: "2025-08-06"
+      responses:
+        '200':
+          description: List of court notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IntimationResponse'
+              examples:
+                success:
+                  summary: Successful response
+                  value:
+                    - date: "2025-08-06"
+                      court: "TJMG"
+                      lawyer_name: "ALFREDO RAMOS"
+                      oab: "123456/MG"
+                      case_number: "1234567-89.2024.8.13.0001"
+                      type: "TOMAR_CIÊNCIA"
+                      summary: "Intimação para ciência de despacho proferido em 05/08/2025"
+                      url: "https://www.tjmg.jus.br/djen/123"
+                      deadline: "15 days"
+                      actions: ["MANIFESTAR_SE", "CALCULAR_PRAZO"]
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_date:
+                  summary: Invalid date format
+                  value:
+                    error: "INVALID_DATE_FORMAT"
+                    message: "Invalid date format. Use YYYY-MM-DD"
+                    code: 400
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /intimations/{case_number}:
+    get:
+      summary: Get case details
+      description: Get detailed information about a specific case
+      parameters:
+        - name: case_number
+          in: path
+          required: true
+          description: Process number to search for
+          schema:
+            type: string
+          example: "1234567-89.2024.8.13.0001"
+      responses:
+        '200':
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntimationResponse'
+        '404':
+          description: Case not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_found:
+                  summary: Case not found
+                  value:
+                    error: "NOT_FOUND"
+                    message: "Case 1234567-89.2024.8.13.0001 not found"
+                    code: 404
+
+  /courts:
+    get:
+      summary: Get available courts
+      description: Get list of available court codes and names
+      responses:
+        '200':
+          description: List of available courts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                      example: "TJMG"
+                    name:
+                      type: string
+                      example: "Tribunal de Justiça de Minas Gerais"
+              examples:
+                courts:
+                  summary: Available courts
+                  value:
+                    - code: "TJMG"
+                      name: "Tribunal de Justiça de Minas Gerais"
+                    - code: "TJSP"
+                      name: "Tribunal de Justiça de São Paulo"
+                    - code: "TJRJ"
+                      name: "Tribunal de Justiça do Rio de Janeiro"
+                    - code: "TRT3"
+                      name: "Tribunal Regional do Trabalho 3ª Região"
+
+components:
+  schemas:
+    IntimationResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of the notification
+          example: "2025-08-06"
+        court:
+          type: string
+          description: Court code
+          example: "TJMG"
+        lawyer_name:
+          type: string
+          description: Lawyer's full name
+          example: "ALFREDO RAMOS"
+        oab:
+          type: string
+          description: OAB registration number
+          example: "123456/MG"
+        case_number:
+          type: string
+          description: Process number
+          example: "1234567-89.2024.8.13.0001"
+        type:
+          type: string
+          description: Type of notification
+          example: "TOMAR_CIÊNCIA"
+        summary:
+          type: string
+          description: Summary of the notification
+          example: "Intimação para ciência de despacho proferido em 05/08/2025"
+        url:
+          type: string
+          format: uri
+          description: URL to the original notification
+          example: "https://www.tjmg.jus.br/djen/123"
+        deadline:
+          type: string
+          nullable: true
+          description: Deadline for action
+          example: "15 days"
+        actions:
+          type: array
+          items:
+            type: string
+          description: Recommended actions
+          example: ["MANIFESTAR_SE", "CALCULAR_PRAZO"]
+      required:
+        - date
+        - court
+        - lawyer_name
+        - oab
+        - case_number
+        - type
+        - summary
+        - url
+        - actions
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "INVALID_DATE_FORMAT"
+        message:
+          type: string
+          description: Error message
+          example: "Invalid date format. Use YYYY-MM-DD"
+        code:
+          type: integer
+          description: HTTP status code
+          example: 400
+      required:
+        - error
+        - message
+        - code
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+tags:
+  - name: Notifications
+    description: Court notification operations
+  - name: Cases
+    description: Case-specific operations
+  - name: Courts
+    description: Court information operations 
