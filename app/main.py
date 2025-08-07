@@ -6,9 +6,23 @@ import httpx
 import json
 from datetime import datetime, date
 import time
+import logging
+import os
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Log startup information
+logger.info("Starting MCP DJEN Server...")
+logger.info(f"Environment: PORT={os.getenv('PORT', '8000')}")
+logger.info(f"Python version: {os.sys.version}")
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="MCP DJEN Server", version="1.0.0")
@@ -21,6 +35,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+logger.info("FastAPI app initialized successfully")
 
 class IntimationResponse(BaseModel):
     date: str
@@ -83,6 +99,7 @@ DJEN_API_BASE_URL = "https://comunicaapi.pje.jus.br/api/v1/comunicacao"
 
 @app.get("/")
 async def root():
+    logger.info("Root endpoint accessed")
     return {
         "status": "success",
         "message": "MCP DJEN Server - Brazilian Court Notifications for LLMs",
@@ -96,6 +113,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
+    logger.info("Health check endpoint accessed")
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
