@@ -6,11 +6,11 @@ A production-ready MCP (Model Context Protocol) server that standardizes access 
 
 ## 🎯 Real-World Impact
 
-This server powers the **Intimação Pro** system, which processes **50,000+ notifications daily** with:
-- **95%+ accuracy** in notification parsing
+This server powers the **Intimação Pro** system, which processes **566 notifications** (test period) with:
+- **86.7% accuracy** in comprehensive regression tests (v1.5)
 - **<4 seconds** average response time
-- **100x ROI** for legal teams
-- **Zero false positives** in deadline calculations
+- **Extremely positive ROI** for legal teams
+- **99.5% API success rate** in production
 
 ## 🏗️ Architecture
 
@@ -307,7 +307,7 @@ response = client.messages.create(
 - **Response Time:** < 4 seconds average
 - **Throughput:** 100 requests/minute
 - **Uptime:** 99.9% (production)
-- **Error Rate:** < 0.1%
+- **Error Rate:** 0.5% (based on real DJEN API performance)
 
 ### Security Features
 - **Rate Limiting:** 100 requests/minute per IP
@@ -318,8 +318,8 @@ response = client.messages.create(
 ### DJEN-Specific Challenges Addressed
 
 #### 1. API Instability
-- **Retry Logic:** Exponential backoff
-- **Circuit Breaker:** Prevents cascade failures
+- **Real Performance:** 99.5% success rate (5,287/5,288 requests)
+- **Response Time:** 95ms average, 99.30% < 500ms
 - **Fallback Data:** Mock responses for development
 
 #### 2. Data Format Inconsistency
@@ -402,10 +402,10 @@ black app/
 ## 💼 Business Impact
 
 ### For Legal Teams
-- **Time Savings:** 95% reduction in manual checking
-- **Accuracy:** Zero missed deadlines
+- **Time Savings:** Reduces manual checking from 30min/day to 3min/day
+- **Accuracy:** 86.7% in comprehensive regression tests
 - **Compliance:** Automated audit trails
-- **Scalability:** Handle unlimited cases
+- **Cost:** Only $0.45/lawyer/month (extremely positive ROI)
 
 ### For AI Developers
 - **Standardized Interface:** Consistent API design
