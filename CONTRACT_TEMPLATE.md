@@ -66,7 +66,7 @@
 
 **Pedro Brandão**  
 AI Engineer | LLM Automation Specialist  
-- **Email**: contact@pdrobrandao.com
+- **Email**: hi@pdrobrandao.com
 - **Website**: https://www.pdrobrandao.com
 - **LinkedIn**: [Pedro Brandão](https://linkedin.com/in/pdrobrandao)
 - **GitHub**: [PdroBrandao](https://github.com/PdroBrandao)

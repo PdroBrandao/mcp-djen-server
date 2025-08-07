@@ -6,11 +6,18 @@ A production-ready MCP (Model Context Protocol) server that standardizes access 
 
 ## 🎯 Real-World Impact
 
-This server powers the **Intimação Pro** system, which processes **566 notifications** (test period) with:
+This server powers the **[Intimação Pro](https://github.com/PdroBrandao/ai-legal-notification-system)** system, which processes **566 notifications** (test period) with:
 - **86.7% accuracy** in comprehensive regression tests (v1.5)
 - **<4 seconds** average response time
 - **Extremely positive ROI** for legal teams
 - **99.5% API success rate** in production
+- **$0.45/lawyer/month** operational cost
+
+### 📱 WhatsApp Integration Vision
+The ultimate goal is enabling lawyers to query their court notifications via WhatsApp using natural language:
+> *"Quais minhas intimações de hoje?"* → LLM → MCP Server → Structured Response
+
+This MCP server is the infrastructure layer that makes this vision possible.
 
 ## 🏗️ Architecture
 
@@ -309,12 +316,6 @@ response = client.messages.create(
 - **Uptime:** 99.9% (production)
 - **Error Rate:** 0.5% (based on real DJEN API performance)
 
-### Security Features
-- **Rate Limiting:** 100 requests/minute per IP
-- **CORS:** Configurable origins
-- **Input Validation:** Pydantic models
-- **Error Handling:** Structured error responses
-
 ### DJEN-Specific Challenges Addressed
 
 #### 1. API Instability
@@ -366,11 +367,23 @@ response = client.messages.create(
 - 📋 Deadline calculation
 - 📋 Document generation
 
-### Phase 4: Ecosystem (Q2 2026)
+### Phase 4: WhatsApp Integration (Q2 2026)
+- 📱 Natural language queries via WhatsApp
+- 🤖 Autonomous legal agent capabilities
+- 📊 Real-time notification alerts
+- 🔗 CRM and calendar integrations
+
+### Phase 5: Ecosystem (Q3 2026)
 - 📋 Plugin system
 - 📋 Third-party integrations
 - 📋 Community contributions
 - 📋 Enterprise features
+
+## 🧑‍💼 Vision for the Future
+
+> The medium-term goal is to transform this system into the leading legal intelligence platform in Brazil, where lawyers can access the full status, deadlines, and details of their cases via WhatsApp using natural language. The vision is to evolve into an autonomous legal agent, with integrated RAG and self-evaluation, capable of operating at 98%+ accuracy without human validation for standard notifications.
+
+This MCP server is the foundational infrastructure that makes this vision possible by standardizing access to Brazilian court data for LLM agents.
 
 ## 🤝 Contributing
 
@@ -407,6 +420,14 @@ black app/
 - **Compliance:** Automated audit trails
 - **Cost:** Only $0.45/lawyer/month (extremely positive ROI)
 
+### Real Production Data (June-July 2025)
+| Metric              | Value       | Period       |
+| ------------------- | ----------- | ------------ |
+| Avg Cost/Lawyer     | $0.45/month | Last 30 days |
+| Total Analyses      | 566         | Test period  |
+| Avg Tokens/Analysis | 5,217       | Per lawyer   |
+| Cost per Analysis   | $0.0029     | Average      |
+
 ### For AI Developers
 - **Standardized Interface:** Consistent API design
 - **Production Ready:** Battle-tested reliability
@@ -422,10 +443,11 @@ black app/
 ## 📞 Contact
 
 - **Author:** Pedro Brandão
-- **Email:** pedro@pdrobrandao.com
+- **Email:** hi@pdrobrandao.com
 - **Website:** https://www.pdrobrandao.com
 - **LinkedIn:** [Pedro Brandão](https://www.linkedin.com/in/pedrobrandao)
 - **GitHub:** [@PdroBrandao](https://github.com/PdroBrandao)
+- **Intimação Pro:** [Repository](https://github.com/PdroBrandao/ai-legal-notification-system)
 
 ## 📄 License
 
