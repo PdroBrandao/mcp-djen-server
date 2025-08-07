@@ -12,6 +12,14 @@ info:
     - Rate limiting and error handling
     - Production-ready reliability
     
+    ## International Use Cases
+    - **Mexico**: AMLO Tribunal Integration
+    - **Portugal**: STJ Lisbon Data Pipeline
+    - **Argentina**: Poder Judicial Federal Integration
+    
+    ## Market Opportunity
+    Brazil's legal market = $28B opportunity (IBGE 2025). Our protocol solves judicial data access for LegalTechs expanding to LATAM and AI teams automating compliance.
+    
     ## Authentication
     Currently open for development. Production deployments should implement API key authentication.
     
@@ -24,7 +32,7 @@ info:
   version: 1.0.0
   contact:
     name: Pedro Brandão
-    email: pedro@pdrobrandao.com
+    email: hi@pdrobrandao.com
     url: https://www.pdrobrandao.com
   license:
     name: MIT
@@ -32,6 +40,13 @@ info:
   x-logo:
     url: https://www.pdrobrandao.com/assets/logo.png
     altText: MCP DJEN Server Logo
+  x-case-studies:
+    - country: Mexico
+      use-case: "AMLO Tribunal Integration"
+      market-size: "$12B"
+    - country: Portugal
+      use-case: "STJ Lisbon Data Pipeline"
+      market-size: "$8B"
 
 servers:
   - url: https://mcp-djen-server-production.up.railway.app

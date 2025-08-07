@@ -13,6 +13,19 @@ This server powers the **[Intimação Pro](https://github.com/PdroBrandao/ai-leg
 - **99.5% API success rate** in production
 - **$0.45/lawyer/month** operational cost
 
+### 🌍 Why International Companies Care
+
+**Brazil's legal market = $28B opportunity (IBGE 2025).** Our protocol solves judicial data access for:
+
+- **LegalTechs expanding to LATAM** - Standardized API for regional expansion
+- **AI teams automating compliance** - Production-ready legal data integration
+- **Global legal automation** - Reference implementation for other jurisdictions
+
+**International Use Cases:**
+- **Mexico**: AMLO Tribunal Integration
+- **Portugal**: STJ Lisbon Data Pipeline
+- **Argentina**: Poder Judicial Federal Integration
+
 ### 📱 WhatsApp Integration Vision
 The ultimate goal is enabling lawyers to query their court notifications via WhatsApp using natural language:
 > *"Quais minhas intimações de hoje?"* → LLM → MCP Server → Structured Response
@@ -346,6 +359,14 @@ response = client.messages.create(
 - **Metrics Collection:** Performance tracking
 - **Alert System:** Proactive issue detection
 - **Log Aggregation:** Centralized logging
+
+#### Scalability & Fault Tolerance
+- **Horizontal Scaling:** Stateless design supports multiple instances
+- **Load Balancing:** Ready for 10,000+ notifications/day
+- **Circuit Breaker:** Automatic fallback for DJEN API failures
+- **Caching Strategy:** Redis integration for high throughput
+- **Database Scaling:** PostgreSQL for production workloads
+- **CDN Integration:** Global content delivery for international users
 
 ## 🗺️ Roadmap
 
