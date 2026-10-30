@@ -1,13 +1,15 @@
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import httpx
 import json
 from datetime import datetime, date
-import time
 import logging
 import os
+
+from app.service import InvalidRequest, NotFound, get_case_by_number, list_courts, search_intimations
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -55,48 +57,6 @@ class ErrorResponse(BaseModel):
     message: str
     code: int
 
-# Mock data based on real DJEN API structure
-MOCK_INTIMATIONS = [
-    {
-        "date": "2025-08-06",
-        "court": "TJMG",
-        "lawyer_name": "PEDRO BRANDÃO",
-        "oab": "123456/MG",
-        "case_number": "1234567-89.2024.8.13.0001",
-        "type": "TOMAR_CIÊNCIA",
-        "summary": "Intimação para ciência de despacho proferido em 05/08/2025",
-        "url": "https://www.tjmg.jus.br/djen/123",
-        "deadline": "15 days",
-        "actions": ["MANIFESTAR_SE", "CALCULAR_PRAZO"]
-    },
-    {
-        "date": "2025-08-06",
-        "court": "TJMG",
-        "lawyer_name": "PEDRO BRANDÃO",
-        "oab": "123456/MG",
-        "case_number": "1234567-89.2024.8.13.0002",
-        "type": "MANIFESTAR_SE",
-        "summary": "Intimação para manifestar sobre impugnação de cálculos",
-        "url": "https://www.tjmg.jus.br/djen/124",
-        "deadline": "5 days",
-        "actions": ["MANIFESTAR_SE", "PREPARAR_IMPUGNACAO"]
-    },
-    {
-        "date": "2025-08-06",
-        "court": "TJMG",
-        "lawyer_name": "PEDRO BRANDÃO",
-        "oab": "123456/MG",
-        "case_number": "1234567-89.2024.8.13.0003",
-        "type": "CITAR",
-        "summary": "Citação para audiência de conciliação",
-        "url": "https://www.tjmg.jus.br/djen/125",
-        "deadline": "10 days",
-        "actions": ["PREPARAR_DOCUMENTOS", "AGENDAR_AUDIENCIA"]
-    }
-]
-
-DJEN_API_BASE_URL = "https://comunicaapi.pje.jus.br/api/v1/comunicacao"
-
 @app.get("/")
 async def root():
     logger.info("Root endpoint accessed")
@@ -104,6 +64,8 @@ async def root():
         "status": "success",
         "message": "MCP DJEN Server - Brazilian Court Notifications for LLMs",
         "version": "1.0.0",
+        "data_source": "mock",
+        "note": "Responses use in-memory sample data. app/adapter.py is not connected to this API.",
         "endpoints": {
             "intimations": "/intimations",
             "health": "/health",
@@ -145,44 +107,9 @@ async def get_intimations(
         GET /intimations?name=ALFREDO+RAMOS&date_start=2025-08-06&date_end=2025-08-06
     """
     try:
-        # Validate date format
-        try:
-            datetime.strptime(date_start, "%Y-%m-%d")
-            datetime.strptime(date_end, "%Y-%m-%d")
-        except ValueError:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid date format. Use YYYY-MM-DD"
-            )
-        
-        # Simulate API processing time
-        time.sleep(0.5)
-        
-        # Filter mock data based on parameters
-        filtered_data = MOCK_INTIMATIONS.copy()
-        
-        # Filter by date range
-        filtered_data = [
-            item for item in filtered_data 
-            if date_start <= item["date"] <= date_end
-        ]
-        
-        # Filter by lawyer name (case insensitive)
-        if name:
-            filtered_data = [
-                item for item in filtered_data 
-                if name.upper() in item["lawyer_name"].upper()
-            ]
-        
-        # Filter by OAB if provided
-        if oab:
-            filtered_data = [
-                item for item in filtered_data 
-                if oab.upper() in item["oab"].upper()
-            ]
-        
-        return filtered_data
-        
+        return search_intimations(name, date_start, date_end, oab)
+    except InvalidRequest as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     except HTTPException:
         raise
     except Exception as e:
@@ -204,20 +131,9 @@ async def get_case_details(case_number: str, request: Request = None):
         Case details if found
     """
     try:
-        # Find case in mock data
-        case = next(
-            (item for item in MOCK_INTIMATIONS if item["case_number"] == case_number),
-            None
-        )
-        
-        if not case:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Case {case_number} not found"
-            )
-        
-        return case
-        
+        return get_case_by_number(case_number)
+    except NotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
     except HTTPException:
         raise
     except Exception as e:
@@ -235,30 +151,23 @@ async def get_available_courts(request: Request = None):
     Returns:
         List of court codes and names
     """
-    courts = [
-        {"code": "TJMG", "name": "Tribunal de Justiça de Minas Gerais"},
-        {"code": "TJSP", "name": "Tribunal de Justiça de São Paulo"},
-        {"code": "TJRJ", "name": "Tribunal de Justiça do Rio de Janeiro"},
-        {"code": "TRT3", "name": "Tribunal Regional do Trabalho 3ª Região"}
-    ]
-    
-    return courts
+    return list_courts()
 
 @app.exception_handler(404)
 async def not_found_handler(request, exc):
-    return {
-        "error": "NOT_FOUND",
-        "message": "Endpoint not found",
-        "code": 404
-    }
+    if isinstance(exc, HTTPException):
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    return JSONResponse(
+        status_code=404,
+        content={"error": "NOT_FOUND", "message": "Endpoint not found", "code": 404},
+    )
 
 @app.exception_handler(500)
 async def internal_error_handler(request, exc):
-    return {
-        "error": "INTERNAL_ERROR",
-        "message": "Internal server error",
-        "code": 500
-    }
+    return JSONResponse(
+        status_code=500,
+        content={"error": "INTERNAL_ERROR", "message": "Internal server error", "code": 500},
+    )
 
 if __name__ == "__main__":
     import uvicorn

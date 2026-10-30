@@ -4,6 +4,12 @@
 
 A production-ready MCP (Model Context Protocol) server that standardizes access to Brazilian Electronic Justice Diary (DJEN) data for LLM agents and AI applications.
 
+## Current data source
+
+The running application uses **in-memory mock data** in [`app/service.py`](app/service.py). `GET /intimations`, `GET /intimations/{case_number}`, `GET /courts`, and the MCP tools all read that sample. They do not call the DJEN API.
+
+[`app/adapter.py`](app/adapter.py) (`DJENAdapter`) can request `https://comunicaapi.pje.jus.br/api/v1/comunicacao`, but **nothing in the active request flow imports it**. The adapter is unused.
+
 ## 🎯 Real-World Impact
 
 This server powers the **[Intimação Pro](https://github.com/PdroBrandao/ai-legal-notification-system)** system, which processes **566 notifications** (test period) with:
@@ -36,11 +42,13 @@ This MCP server is the infrastructure layer that makes this vision possible.
 
 ![System Architecture](diagrams/architecture.png)
 
-**Flow:**
-1. LLM agent requests court notifications
-2. MCP server queries DJEN API
-3. Data is parsed and standardized
-4. Structured JSON returned to LLM
+**Flow today:**
+1. A REST client or an MCP host asks for court notifications
+2. The route or the MCP tool calls `app/service.py`
+3. The service filters the in-memory mock dataset
+4. Structured JSON is returned
+
+`DJENAdapter` is not part of this flow.
 
 ![Request Flow](diagrams/sequence.png)
 
@@ -86,6 +94,32 @@ docker build -t mcp-djen-server .
 docker run -p 8000:8000 mcp-djen-server
 ```
 
+Docker runs the REST API only. It does not speak MCP.
+
+### MCP server (stdio)
+
+The MCP process is separate from uvicorn. From the repository root, with the virtualenv active:
+
+```bash
+python -m app.mcp_server
+```
+
+That command blocks on stdin. A host such as Cursor launches it; you do not open a port. Point the host at the same interpreter and arguments:
+
+```json
+{
+  "mcpServers": {
+    "mcp-djen-server": {
+      "command": "/absolute/path/to/venv/bin/python",
+      "args": ["-m", "app.mcp_server"],
+      "cwd": "/absolute/path/to/mcp-djen-server"
+    }
+  }
+}
+```
+
+Tools: `get_intimations`, `get_case_details`, `list_courts`. They call the same functions as the REST routes and return the mock dataset.
+
 ### Environment Variables
 
 ```bash
@@ -112,6 +146,18 @@ API_KEY_REQUIRED=false
 ```
 
 ## 🧪 Testing
+
+### MCP protocol
+
+One command. It starts the MCP server over stdio, lists the tools, calls `list_courts` and `get_intimations`, and checks that an invalid date comes back as a tool error. No REST server, Docker, or external API is required.
+
+```bash
+python mcp_smoke.py
+```
+
+### REST
+
+`test_server.py` expects the REST API on `http://localhost:8000`.
 
 ### Automated Tests
 ```bash

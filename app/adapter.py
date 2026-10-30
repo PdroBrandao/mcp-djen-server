@@ -1,6 +1,9 @@
 """
 DJEN API Adapter
 
+Not used by the running application. The REST routes and the MCP tools read
+the in-memory sample in ``app.service`` and do not import this module.
+
 This module provides intelligent parsing and normalization of Brazilian Electronic Justice Diary (DJEN) data.
 It handles the complex, unstructured nature of DJEN responses and converts them into structured,
 LLM-friendly JSON format.
