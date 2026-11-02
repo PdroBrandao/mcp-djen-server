@@ -6,7 +6,6 @@ Python tool functions directly.
 
 import asyncio
 
-import pytest
 from mcp import Client
 
 from app.mcp_server import mcp
@@ -62,10 +61,3 @@ def test_get_intimations_via_client():
     rows = _call(action)
     assert isinstance(rows, list)
     assert len(rows) == 3
-
-
-@pytest.mark.skip(reason="TODO(STUDENT) desafio 6: data inválida deve voltar como erro de tool pelo client MCP. Remova este skip ao implementar.")
-def test_get_intimations_invalid_date_is_error():
-    # TODO(STUDENT): invoque get_intimations pelo Client, não pela função Python.
-    # Uma data inválida deve marcar is_error e o texto deve citar "Invalid date format".
-    pytest.fail("TODO(STUDENT): implementar")

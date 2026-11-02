@@ -17,10 +17,3 @@ def test_golden_happy_path(golden):
 def test_name_match_is_case_insensitive(name):
     result = search_intimations(name, "2025-08-06", "2025-08-06")
     assert len(result) == 3
-
-
-@pytest.mark.skip(reason="TODO(STUDENT) desafio 3: parametrize os demais casos de busca do golden. Remova este skip ao implementar.")
-def test_remaining_golden_cases(golden):
-    # TODO(STUDENT): use @pytest.mark.parametrize nos casos de golden["search"]
-    # que o teste do caminho feliz ainda não cobre. Compare os números de processo.
-    pytest.fail("TODO(STUDENT): implementar")

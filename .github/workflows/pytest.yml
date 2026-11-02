@@ -1,7 +1,5 @@
 name: pytest
 
-# TODO(STUDENT): desafio 7 — adicione um filtro paths aos triggers push e pull_request.
-# Não remova os triggers que já existem. O objetivo está no TESTING_GUIDE.md.
 on:
   push:
   pull_request:

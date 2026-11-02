@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
@@ -47,10 +44,3 @@ def test_unknown_route_is_404(client):
     body = response.json()
     assert body["error"] == "NOT_FOUND"
     assert body["message"] == "Endpoint not found"
-
-
-@pytest.mark.skip(reason="TODO(STUDENT) desafio 5: prove com monkeypatch que a rota repassa o resultado do service. Remova este skip ao implementar.")
-def test_route_uses_service_result(client, monkeypatch):
-    # TODO(STUDENT): substitua app.main.search_intimations por um retorno controlado
-    # e mostre que GET /intimations devolve esse retorno, não o filtro real.
-    pytest.fail("TODO(STUDENT): implementar")

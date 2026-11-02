@@ -157,11 +157,15 @@ python mcp_smoke.py
 
 ### Pytest
 
+The automated suite does not need a running server. GitHub Actions runs it on every push and pull request.
+
 ```bash
 python -m pytest
 ```
 
-Categories, fixtures, mocks, and the practice challenges are in [TESTING_GUIDE.md](TESTING_GUIDE.md).
+- `tests/unit/` exercises the query service directly. Fixed expectations live in `tests/data/golden_intimations.json`.
+- `tests/integration/` covers the FastAPI routes with `TestClient`, and the MCP server through the official client: tool discovery and tool calls.
+- `tests/conftest.py` turns off the service's artificial delay for the suite only. Runtime behavior is unchanged.
 
 ### REST
 

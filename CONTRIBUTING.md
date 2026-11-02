@@ -75,16 +75,18 @@ python3 -m pytest
 python3 mcp_smoke.py
 ```
 
-See [TESTING_GUIDE.md](TESTING_GUIDE.md) for categories, fixtures, and the practice challenges.
+`python3 -m pytest` is the automated suite. It talks to the service, the FastAPI app, and the MCP server in-process, so nothing else has to be running. `mcp_smoke.py` is a separate manual check over stdio.
 
-### Test Structure
+### Test layout
 ```
 tests/
-├── conftest.py
-├── data/golden_intimations.json
-├── unit/
-└── integration/
+├── conftest.py                      # shared fixtures, including the test-only delay bypass
+├── data/golden_intimations.json     # fixed search expectations
+├── unit/                            # service behavior and validation
+└── integration/                     # REST via TestClient, MCP via the official client
 ```
+
+`.github/workflows/pytest.yml` runs `python -m pytest` on pushes and pull requests.
 
 ## 📚 Documentation
 
