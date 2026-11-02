@@ -78,6 +78,7 @@ def search_intimations(
     date_start: str,
     date_end: str,
     oab: Optional[str] = None,
+    court: Optional[str] = None
 ) -> list[dict[str, Any]]:
     """Filter the sample notifications by name, date range, and optional OAB."""
     _require_iso_date(date_start)
@@ -100,6 +101,9 @@ def search_intimations(
     if oab:
         filtered = [item for item in filtered if oab.upper() in item["oab"].upper()]
 
+    if court:
+        filtered = [item for item in filtered if court.upper() in item["court"].upper()]
+        
     return filtered
 
 

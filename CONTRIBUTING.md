@@ -71,23 +71,19 @@ type(scope): description
 
 ### Running Tests
 ```bash
-# Run all tests
-python3 test_server.py
-
-# Run specific test
-python3 -m pytest tests/test_adapter.py
-
-# Run with coverage
-python3 -m pytest --cov=app tests/
+python3 -m pytest
+python3 mcp_smoke.py
 ```
+
+See [TESTING_GUIDE.md](TESTING_GUIDE.md) for categories, fixtures, and the practice challenges.
 
 ### Test Structure
 ```
 tests/
-├── test_adapter.py      # API integration tests
-├── test_main.py         # Endpoint tests
-├── test_validation.py   # Data validation tests
-└── test_performance.py  # Performance benchmarks
+├── conftest.py
+├── data/golden_intimations.json
+├── unit/
+└── integration/
 ```
 
 ## 📚 Documentation

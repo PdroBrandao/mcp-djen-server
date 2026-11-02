@@ -87,6 +87,7 @@ async def health_check():
 async def get_intimations(
     name: str = Query(..., description="Lawyer's full name"),
     oab: Optional[str] = Query(None, description="OAB registration number"),
+    court: Optional[str] = Query(None, description= "Court's name"),
     date_start: str = Query(..., description="Start date (YYYY-MM-DD)"),
     date_end: str = Query(..., description="End date (YYYY-MM-DD)"),
     request: Request = None
@@ -97,6 +98,7 @@ async def get_intimations(
     Args:
         name: Lawyer's full name (required)
         oab: OAB registration number (optional)
+        court: Court's name (Optional)
         date_start: Start date in YYYY-MM-DD format (required)
         date_end: End date in YYYY-MM-DD format (required)
     
@@ -107,7 +109,7 @@ async def get_intimations(
         GET /intimations?name=ALFREDO+RAMOS&date_start=2025-08-06&date_end=2025-08-06
     """
     try:
-        return search_intimations(name, date_start, date_end, oab)
+        return search_intimations(name, date_start, date_end, oab, court)
     except InvalidRequest as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except HTTPException:

@@ -155,6 +155,14 @@ One command. It starts the MCP server over stdio, lists the tools, calls `list_c
 python mcp_smoke.py
 ```
 
+### Pytest
+
+```bash
+python -m pytest
+```
+
+Categories, fixtures, mocks, and the practice challenges are in [TESTING_GUIDE.md](TESTING_GUIDE.md).
+
 ### REST
 
 `test_server.py` expects the REST API on `http://localhost:8000`.
