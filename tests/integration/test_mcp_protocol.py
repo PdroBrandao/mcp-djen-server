@@ -33,18 +33,6 @@ def test_discovers_tools():
 
     assert _call(action) == ["get_case_details", "get_intimations", "list_courts"]
 
-
-def test_list_courts_via_client():
-    async def action(client):
-        result = await client.call_tool("list_courts", {})
-        assert result.is_error is False
-        return _payload(result)
-
-    rows = _call(action)
-    assert isinstance(rows, list)
-    assert len(rows) == 4
-
-
 def test_get_intimations_via_client():
     async def action(client):
         result = await client.call_tool(
@@ -61,3 +49,17 @@ def test_get_intimations_via_client():
     rows = _call(action)
     assert isinstance(rows, list)
     assert len(rows) == 3
+
+
+def test_list_courts_via_client():
+    async def action(client):
+        result = await client.call_tool("list_courts", {})
+        assert result.is_error is False
+        return _payload(result)
+
+    rows = _call(action)
+    assert isinstance(rows, list)
+    assert len(rows) == 4
+
+
+

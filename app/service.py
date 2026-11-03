@@ -84,6 +84,9 @@ def search_intimations(
     _require_iso_date(date_start)
     _require_iso_date(date_end)
 
+    if date_end < date_start:
+        raise InvalidRequest("Invalid range date. Date end needs to be greater than Date start")
+
     # Kept so the REST response time matches the previous handler.
     time.sleep(0.5)
 
